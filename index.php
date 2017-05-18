@@ -1,38 +1,32 @@
 <?php
-$estacionamento = criarEstacionamento();
+$estacionamento = EstacionamentoFactory::make();
 echo 'Quantidade de vagas: '.$estacionamento->getCountVaga();
 
-function criarEstacionamento() :Estacionamento
+class EstacionamentoFactory
 {
-    $estacionamento = new Estacionamento;
-    $numAndares = rand(1, 10);
+    public static function make(int $qtdAndares = 5, int $qtdFileiras = 5, int $qtdVagasPorFileira = 5) :Estacionamento
+    {        
+        $estacionamento = new Estacionamento;
 
-    for ($a = 1; $a <= $numAndares; $a++) {
-        $andar = new Andar;
-        $numFileiras = rand(1, 10);
-        echo $a.'º Andar <br>';
+        for ($a = 1; $a <= $qtdAndares; $a++) {
+            $andar = new Andar;
 
-        for ($f = 1; $f <= $numFileiras; $f++) {
-            $fileira = new Fileira;
-            $numVagas = rand(1, 10);
+            for ($f = 1; $f <= $qtdFileiras; $f++) {
+                $fileira = new Fileira;
 
-            for ($v = 1; $v <= $numVagas; $v++) {
-                $vaga = new Vaga(rand(0, 2));
-                $fileira->addVaga($vaga);
-                echo $v.'|';
+                for ($v = 1; $v <= $qtdVagasPorFileira; $v++) {
+                    $vaga = new Vaga(rand(0, 2));
+                    $fileira->addVaga($vaga);
+                }
+                
+                $andar->addFileira($fileira);
             }
 
-            echo '<br>';
-
-            $andar->addFileira($fileira);
+            $estacionamento->addAndar($andar);
         }
 
-        echo '<hr>';
-
-        $estacionamento->addAndar($andar);
+        return $estacionamento;
     }
-
-    return $estacionamento;
 }
 
 class Estacionamento
@@ -55,8 +49,8 @@ class Estacionamento
     {
         $countVagas = 0;
 
-        foreach ($this->andares as $andare) {
-            $countVagas += $andare->getCountVaga();
+        foreach ($this->andares as $andar) {
+            $countVagas += $andar->getCountVaga();
         }
 
         return $countVagas;
@@ -80,7 +74,7 @@ class Vaga
             throw new \Exception('Tamanho de vaga invalido');
         }
 
-        $this->size = self::VAGA_SIZES[$size];
+        $this->size = $size;
     }
 
     public function ocuparVaga() :boll
@@ -88,6 +82,16 @@ class Vaga
         $this->disponivel = false;
 
         return $this->disponivel;
+    }
+    
+    public function getSize()
+    {
+        return $this->size;   
+    }
+    
+    public function getSizeLabel()
+    {
+        return self::VAGA_SIZES[$this->size];
     }
 }
 
